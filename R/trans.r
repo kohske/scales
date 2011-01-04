@@ -43,3 +43,23 @@ as.trans <- function(x) {
   match.fun(f)()
 }
 
+#' Chain multiple transformer.
+#'
+#' @param ... transformers
+#' @param breaks breaks function for this transformation.
+#' @param format format function for this transformation.
+#' @seealso \Sexpr[results=rd]{scales:::trans_new()}
+#' @export
+#' @examples
+#' trs <- trans_chain("log","reverse")
+#' trs$trans(1:5)
+#' trs$inverse(-(log(1:5)))
+trans_chain <- function(..., breaks = pretty_breaks(), format = scientific_format()) {
+  trs <- Map(as.trans, list(...))
+  Funcall <- function(f, ...) f(...)
+  trans_new(name = str_c(sapply(trs, function(x)x$name), collapse="->"),
+    transform = function(x) Reduce(Funcall, sapply(rev(trs), function(y)y$transform), x, right=TRUE),
+    inverse = function(x) Reduce(Funcall, sapply(trs, function(y)y$inverse), x, right=TRUE),
+    breaks = breaks,
+    format = format)
+}
