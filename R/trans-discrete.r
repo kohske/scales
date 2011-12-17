@@ -2,8 +2,19 @@
 #'
 #' @export
 flip_trans <- function() {
-  trans_new("flip",
-            function(x) {r <- factor(x); factor(r, levels = rev(levels(r)))},
-            function(x) {r <- factor(x); factor(r, levels = rev(levels(r)))})
+  f <- function(x) {
+    if (is.numeric(x)) {
+      -x
+    } else if (is.character(x)) {
+      x <- factor(x)
+      factor(x, levels = rev(levels(x)))
+    } else if (is.factor(x)) {
+      factor(x, levels = rev(levels(x)))
+    } else {
+      # NA, NULL, etc.
+      x
+    }
+  }
+  trans_new("flip", f, f)
 }
 
